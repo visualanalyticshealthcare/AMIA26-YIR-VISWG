@@ -1,0 +1,72 @@
+/*
+ * AMIA 2026 theme tokens, sampled from the official slide template
+ * (deep indigo field, violet/periwinkle waves, neon-cyan outline, Dallas-skyline pink and green).
+ */
+:root {
+  --amia-deep: #2d066a;
+  --amia-deeper: #1c0347;
+  --amia-indigo: #626df5;
+  --amia-violet: #6f74f5;
+  --amia-periwinkle: #8795f4;
+  --amia-cyan: #8ee9f2;
+  --amia-cyan-soft: #97d2e8;
+  --amia-pink: #f27ac9;
+  --amia-green: #5ef0b5;
+  --amia-white: #ffffff;
+  --amia-text: #f3f1ff;
+  --amia-text-dim: #b9b3e6;
+
+  --font-display: 'Montserrat', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --glow-cyan: 0 0 12px rgba(142, 233, 242, 0.55), 0 0 40px rgba(142, 233, 242, 0.25);
+  --glow-pink: 0 0 12px rgba(242, 122, 201, 0.6), 0 0 40px rgba(242, 122, 201, 0.25);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Backdrop lives on <html> (not a fixed element) so it never fights impress.js 3D compositing. */
+  background: var(--amia-deep) url(../assets/backdrop.svg) center / cover no-repeat fixed;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  color: var(--amia-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--amia-cyan);
+}
+
+.chip {
+  display: inline-block;
+  padding: 6px 16px;
+  margin: 0 10px 10px 0;
+  border: 1.5px solid var(--amia-cyan-soft);
+  border-radius: 999px;
+  font-size: 20px;
+  color: var(--amia-text);
+  background: rgba(142, 233, 242, 0.08);
+}

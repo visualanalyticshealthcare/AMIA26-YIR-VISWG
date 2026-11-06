@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
+  <!-- Backdrop echoing the AMIA 2026 template: deep indigo field, violet waves and a cyan outline on the right. -->
+  <defs>
+    <linearGradient id="wave" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8795f4" />
+      <stop offset="0.55" stop-color="#6f74f5" />
+      <stop offset="1" stop-color="#626df5" />
+    </linearGradient>
+    <radialGradient id="vignette" cx="0.35" cy="0.45" r="0.8">
+      <stop offset="0" stop-color="#3a0a86" />
+      <stop offset="1" stop-color="#1c0347" />
+    </radialGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#vignette)" />
+  <path d="M1230 0 C1380 90 1420 170 1410 250 C1400 330 1330 360 1360 360 L1600 360 L1600 0 Z" fill="url(#wave)" opacity="0.9" />
+  <path d="M700 900 L1180 520 C1230 480 1300 470 1600 470 L1600 900 Z" fill="url(#wave)" opacity="0.55" />
+  <path d="M1270 0 C1420 90 1460 180 1440 270 C1420 360 1340 340 1180 330 C1030 320 990 400 1000 520 L1040 900" fill="none" stroke="#97d2e8" stroke-width="2" opacity="0.85" />
+  <path d="M760 900 L1250 520" stroke="#97d2e8" stroke-width="1.5" opacity="0.6" />
+</svg>

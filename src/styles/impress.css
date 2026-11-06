@@ -1,0 +1,53 @@
+/* impress.js base styles: steps, states, and the not-supported fallback. */
+
+.impress-not-supported .step {
+  position: relative;
+  margin: 40px auto;
+  opacity: 1;
+}
+
+.impress-enabled .step {
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: opacity 0.9s ease;
+  opacity: 0.12;
+}
+
+.impress-enabled .step.active {
+  opacity: 1;
+}
+
+/* Keep the funnel overview readable: everything visible while zoomed out. */
+.impress-on-overview .step {
+  opacity: 0.85;
+}
+
+.step {
+  width: 1600px;
+  height: 900px;
+  padding: 80px 100px;
+  color: var(--amia-text);
+}
+
+/* Decorative 3D elements living inside the impress canvas (not steps). */
+.deco {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  transform-style: preserve-3d;
+}
+
+/* Hint shown when impress.js is not supported. */
+.fallback-message {
+  display: none;
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--amia-deeper);
+}
+
+.impress-not-supported .fallback-message {
+  display: block;
+}
