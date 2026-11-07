@@ -1,28 +1,46 @@
 <script setup lang="ts">
 /**
- * The deck. Steps are rendered once; impress.js then takes over positioning and navigation.
- * Do not put reactive state in this template (see composables/useImpress.ts).
+ * The deck. impress.js only moves the text slides in 3D; the paper points are a separate Three.js layer
+ * (PaperCloudLayer) that follows the active slide. Keep this template static (see composables/useImpress.ts).
  */
-import FunnelRings from './components/FunnelRings.vue'
+import CriteriaSlide from './components/CriteriaSlide.vue'
 import ImpressStep from './components/ImpressStep.vue'
+import PaperCloudLayer from './components/PaperCloudLayer.vue'
 import PresentationHud from './components/PresentationHud.vue'
+import SearchSlide from './components/SearchSlide.vue'
 import SelectedPapers from './components/SelectedPapers.vue'
 import StageSlide from './components/StageSlide.vue'
-import { STAGE_DEPTH, stagePose } from './data/layout'
+import TypedText from './components/TypedText.vue'
+import { useImpressRoot } from './composables/useImpress'
+import { slidePose } from './data/layout'
 import { meta } from './data/meta'
 import { stages } from './data/pipeline'
-import { useImpressRoot } from './composables/useImpress'
+import { shortlist, countAtLeast } from './data/records'
+import type { CloudScene } from './three/PaperCloud'
 
 useImpressRoot('impress')
+
+// Slide order along the dive. Each entry gets the next pose on the spiral.
+const order = ['title', 'search', 'criteria', ...stages.map((s) => s.id), 'papers', 'thanks']
+const pose = (id: string) => slidePose(order.indexOf(id))
 
 const stageSteps = stages.map((stage, i) => ({
   stage,
   index: i,
-  incoming: i === 0 ? stage.count : stages[i - 1]!.count,
-  pose: stagePose(i),
+  pose: pose(stage.id),
 }))
-const papersPose = stagePose(stages.length)
-const funnelMid = -STAGE_DEPTH * ((stages.length + 1) / 2)
+const funnelMid = (pose('identified').z + pose('papers').z) / 2
+
+/** Which point-cloud layout each slide shows. The cloud first appears on the search slide. */
+const cloudScenes: Record<string, CloudScene> = {
+  title: 'hidden',
+  search: 'sources',
+  criteria: 'criteria',
+  ...Object.fromEntries(stages.map((s) => [s.id, `stage${s.minStage}` as CloudScene])),
+  papers: 'papers',
+  overview: 'overview',
+  thanks: 'thanks',
+}
 </script>
 
 <template>
@@ -31,16 +49,8 @@ const funnelMid = -STAGE_DEPTH * ((stages.length + 1) / 2)
     <p>For the best experience please use the latest Chrome, Safari, Firefox, or Edge.</p>
   </div>
 
-  <div
-    id="impress"
-    data-width="1600"
-    data-height="900"
-    data-perspective="1000"
-    data-transition-duration="1400"
-  >
-    <FunnelRings />
-
-    <ImpressStep id="title" :z="0">
+  <div id="impress" data-width="1600" data-height="900" data-perspective="1000" data-transition-duration="1400">
+    <ImpressStep id="title" v-bind="pose('title')">
       <div class="title-slide">
         <div class="eyebrow">{{ meta.conference }} · {{ meta.location }}</div>
         <h1>
@@ -53,32 +63,33 @@ const funnelMid = -STAGE_DEPTH * ((stages.length + 1) / 2)
       </div>
     </ImpressStep>
 
-    <ImpressStep
-      v-for="s in stageSteps"
-      :id="s.stage.id"
-      :key="s.stage.id"
-      :x="s.pose.x"
-      :y="s.pose.y"
-      :z="s.pose.z"
-      :rotate-z="s.pose.rotateZ"
-    >
-      <StageSlide :stage="s.stage" :index="s.index" :incoming="s.incoming" />
+    <ImpressStep id="search" v-bind="pose('search')">
+      <SearchSlide />
     </ImpressStep>
 
-    <ImpressStep id="papers" :x="papersPose.x" :y="papersPose.y" :z="papersPose.z" :rotate-z="papersPose.rotateZ">
+    <ImpressStep id="criteria" v-bind="pose('criteria')">
+      <CriteriaSlide />
+    </ImpressStep>
+
+    <ImpressStep v-for="s in stageSteps" :id="s.stage.id" :key="s.stage.id" v-bind="s.pose">
+      <StageSlide :stage="s.stage" :index="s.index" />
+    </ImpressStep>
+
+    <ImpressStep id="papers" v-bind="pose('papers')">
       <div class="eyebrow">The selection</div>
-      <h2 class="section-title">{{ stages.at(-1)!.count }} papers that defined the year</h2>
+      <h2 class="section-title"><TypedText :text="`${shortlist.length} papers selected after full-text review`" /></h2>
       <SelectedPapers />
     </ImpressStep>
 
     <ImpressStep id="overview" class="overview" :x="3200" :y="-600" :z="funnelMid" :rotate-x="-12" :rotate-y="52" :scale="9.5">
       <div class="overview-label">
         <div class="eyebrow">The whole funnel</div>
-        <h2>{{ stages[0]!.count.toLocaleString('en-US') }} → {{ stages.at(-1)!.count }}</h2>
+        <h2>{{ countAtLeast(0) }} → {{ shortlist.length }}</h2>
+        <p class="overview-sub">papers reviewed → papers selected</p>
       </div>
     </ImpressStep>
 
-    <ImpressStep id="thanks" :z="papersPose.z - STAGE_DEPTH" :rotate-z="papersPose.rotateZ + 18">
+    <ImpressStep id="thanks" v-bind="pose('thanks')">
       <div class="title-slide">
         <div class="eyebrow">{{ meta.workshopShort }} Working Group</div>
         <h1><span class="accent">Thank you</span></h1>
@@ -87,6 +98,7 @@ const funnelMid = -STAGE_DEPTH * ((stages.length + 1) / 2)
     </ImpressStep>
   </div>
 
+  <PaperCloudLayer :scenes="cloudScenes" />
   <PresentationHud />
 </template>
 
@@ -96,9 +108,10 @@ const funnelMid = -STAGE_DEPTH * ((stages.length + 1) / 2)
   flex-direction: column;
   justify-content: center;
   height: 100%;
+  max-width: 900px;
 }
 h1 {
-  font-size: 104px;
+  font-size: 100px;
   font-weight: 800;
   line-height: 1.05;
   margin: 24px 0 28px;
@@ -110,7 +123,7 @@ h1 {
   color: transparent;
 }
 .subtitle {
-  font-size: 36px;
+  font-size: 34px;
   color: var(--amia-text-dim);
   margin: 0 0 40px;
 }
@@ -130,16 +143,18 @@ kbd {
   font-family: var(--font-body);
 }
 .section-title {
-  font-size: 64px;
+  font-size: 60px;
   margin-top: 12px;
-}
-.overview-label {
-  text-align: center;
-  margin-top: 0;
+  min-height: 1.2em;
 }
 .overview-label h2 {
   font-size: 120px;
   color: var(--amia-cyan);
   text-shadow: var(--glow-cyan);
+}
+.overview-sub {
+  margin: 0;
+  font-size: 40px;
+  color: var(--amia-text-dim);
 }
 </style>

@@ -1,53 +1,64 @@
 /**
- * The literature-funnel stages. All numbers are PLACEHOLDERS: replace them with the real counts.
- * Each stage becomes one impress.js step, placed deeper (more negative z) inside the 3D funnel.
+ * Funnel stages, counted from the per-paper records so they always match the spreadsheet.
+ * Every number is shown as "<count> papers <meaning>", so it is clear what it counts.
  */
+import { byJournal, countAtLeast, records } from './records'
+import { search } from './search'
+
 export interface Stage {
   id: string
+  /** Short name for the stage tracker. */
+  short: string
+  /** Step name shown above the number. */
   label: string
+  /** Minimum `PaperRecord.stage` a paper needs to still be in the funnel here. */
+  minStage: number
   count: number
+  /** Completes the sentence "<count> papers …". */
+  meaning: string
+  /** What happened to the papers coming into this step. */
+  flow: string
   description: string
-  /** Short chips shown under the description (sources, criteria, ...). */
-  tags?: string[]
+  chips: string[]
 }
+
+const n = (s: number) => countAtLeast(s)
+const uncertain = records.filter((r) => r.uncertain).length
+// The two papers with a perfect full-text score are the most representative overall.
+const perfect = records.filter((r) => r.stage === 3 && r.score?.total === 9).length
 
 export const stages: Stage[] = [
   {
     id: 'identified',
-    label: 'Identified',
-    count: 3200,
-    description: 'Records retrieved from bibliographic databases and venue proceedings.',
-    tags: ['PubMed', 'IEEE VIS', 'ACM DL', 'JAMIA / JBI', 'arXiv'],
-  },
-  {
-    id: 'deduplicated',
-    label: 'After de-duplication',
-    count: 2150,
-    description: 'Duplicate records across sources merged.',
+    short: 'Reviewed',
+    label: 'Manual review set',
+    minStage: 0,
+    count: n(0),
+    meaning: 'entered manual review',
+    flow: `${n(0)} of the ${search.results} PubMed results`,
+    description: 'Every paper was read and judged by the team, not filtered by keywords alone.',
+    chips: byJournal.slice(0, 6).map(([j, c]) => `${j} · ${c}`),
   },
   {
     id: 'screened',
-    label: 'Title & abstract screened',
-    count: 420,
-    description: 'Kept papers where visual analytics is central and the domain is health or biomedicine.',
-    tags: ['Visual analytics', 'Health data', 'Evaluated system'],
-  },
-  {
-    id: 'fulltext',
-    label: 'Full-text reviewed',
-    count: 96,
-    description: 'Full papers assessed for novelty, rigor, and impact.',
+    short: 'Passed screening',
+    label: 'Title & abstract screening',
+    minStage: 1,
+    count: n(1),
+    meaning: 'passed title & abstract screening',
+    flow: `${n(1)} of ${n(0)} kept · ${n(0) - n(1)} excluded`,
+    description: 'Kept only if it is interactive visual analytics applied to health care.',
+    chips: [`${uncertain} of the ${n(1)} kept as uncertain`],
   },
   {
     id: 'shortlist',
-    label: 'Shortlisted',
-    count: 24,
-    description: 'Working-group discussion and voting.',
-  },
-  {
-    id: 'selected',
-    label: 'Selected',
-    count: 8,
-    description: 'Papers featured in this Year in Review.',
+    short: 'Selected',
+    label: 'Full-text review',
+    minStage: 3,
+    count: n(3),
+    meaning: 'selected after full-text review',
+    flow: `${n(3)} of ${n(1)} selected · ${perfect} most representative overall`,
+    description: `The strongest papers of the year; ${perfect} of them stood out as the most representative across every dimension.`,
+    chips: [`${perfect} most representative`, `${n(3) - perfect} more strong papers`],
   },
 ]

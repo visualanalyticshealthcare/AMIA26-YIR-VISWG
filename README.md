@@ -1,10 +1,18 @@
 # AMIA 2026 · VAHC Year in Review
 
 A 3D web presentation for the Visual Analytics in Healthcare (VAHC) Working Group "Year in Review" at the AMIA 2026 Annual Symposium (Dallas, TX).
-The deck flies the audience down a neon funnel: from thousands of candidate papers, through each screening stage, to the handful selected for the review.
+It walks from the PubMed search, through manual screening, to the shortlist of papers the working group discussed.
 
-Built with [impress.js](https://github.com/impress/impress.js) for the 3D camera, Vue 3 + TypeScript for the slide components, and Vite + Bun for tooling.
-It is a pure static frontend.
+Live: https://visualanalyticshealthcare.github.io/AMIA26-YIR-VISWG/
+
+## Architecture
+
+Two independent layers:
+
+- **Text slides: impress.js + Vue.** impress.js only moves the text slides through 3D space (a spiral dive along -z). Headlines and the search query type themselves out with [typed.js](https://github.com/mattboldt/typed.js) the first time a slide is entered.
+- **Paper cloud: Three.js.** A fixed full-screen WebGL canvas with one glowing point per reviewed paper. It has its own render loop; each slide only selects a layout (search clusters, screening sphere, shortlist ring, overview funnel), and the points ease toward it. impress.js never touches it.
+
+Slides that the camera is about to fly through are faded out first (`cullBehindCamera` in `src/composables/useImpress.ts`), which prevents perspective blow-up flashes during transitions.
 
 ## Quick start
 
@@ -17,28 +25,25 @@ bun run preview    # serve dist/
 
 Navigate with the arrow keys, Space, or the stage tracker at the bottom of the screen.
 
-## Where to edit
+## Data
+
+All counts come from the working-group review spreadsheet, so slides never disagree with it.
+
+```bash
+uv run scripts/extract_records.py "/path/to/YIR VAHC AMIA 2026.xlsx"
+```
+
+This writes `src/data/records.json`: one entry per paper in the full review set (bibliographic fields, furthest stage reached, and the Novelty / Importance / Presentability score). Reviewer comments are not exported.
 
 | File | What it controls |
 | --- | --- |
-| `src/data/meta.ts` | Title, subtitle, presenters, review window |
-| `src/data/pipeline.ts` | Funnel stages and their counts (currently placeholders) |
-| `src/data/papers.ts` | The final selected papers (currently placeholders) |
-| `src/data/layout.ts` | 3D placement: stage depth, spiral twist, ring radii |
+| `src/data/search.ts` | PubMed query, review window, inclusion / exclusion criteria, scoring rubric |
+| `src/data/pipeline.ts` | Funnel stages, counted from `records.json` |
+| `src/data/meta.ts` | Title, subtitle, presenters |
+| `src/data/layout.ts` | 3D path of the text slides |
+| `src/three/PaperCloud.ts` | Point-cloud layouts per scene and the WebGL shader |
+| `src/App.vue` | Slide order and which cloud scene each slide shows |
 | `src/styles/theme.css` | AMIA 2026 color tokens and typography |
-| `src/assets/backdrop.svg` | Background waves echoing the AMIA 2026 slide template |
-| `src/App.vue` | The ordered list of impress.js steps |
-
-## Structure
-
-- `ImpressStep.vue` wraps one impress.js step and maps props to `data-x/y/z/rotate/scale`.
-- `StageSlide.vue` + `PaperField.vue` render one funnel stage: a canvas with one dot per incoming paper, where filtered-out papers drift away when the step becomes active.
-- `FunnelRings.vue` places decorative neon rings in the 3D canvas, one per stage, shrinking with depth.
-- `SelectedPapers.vue` is a rotating 3D carousel of the final picks.
-- `PresentationHud.vue` is the fixed header and the clickable stage tracker.
-- `composables/useImpress.ts` initialises impress.js and exposes the active step as shared state.
-
-impress.js moves step elements into its own canvas after init, so `App.vue` must stay static; put reactive state in child components or the shared composable.
 
 ## Theme
 
@@ -48,4 +53,3 @@ Official AMIA and institutional logos are not included in this repo.
 ## Deploy
 
 `.github/workflows/pages.yml` builds with Bun and publishes `dist/` to GitHub Pages on every push to `main`.
-Enable it once under Settings → Pages → Source: GitHub Actions.

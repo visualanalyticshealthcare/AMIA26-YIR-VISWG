@@ -51,3 +51,15 @@
 .impress-not-supported .fallback-message {
   display: block;
 }
+
+/*
+ * Depth culling (see cullBehindCamera in composables/useImpress.ts): slides and rings the camera is about to
+ * fly through fade out quickly, before they cross the perspective plane and get blown up across the screen.
+ */
+.impress-enabled .behind-camera {
+  opacity: 0 !important;
+  visibility: hidden;
+  transition:
+    opacity 0.25s ease,
+    visibility 0s linear 0.25s;
+}

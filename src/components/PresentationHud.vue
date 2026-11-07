@@ -27,7 +27,7 @@ const showTracker = computed(() => activeIndex.value >= 0)
     >
       <span class="dot" />
       <span class="n">{{ s.count.toLocaleString('en-US') }}</span>
-      <span class="l">{{ s.label }}</span>
+      <span class="l">{{ s.short }}</span>
     </button>
   </nav>
 </template>

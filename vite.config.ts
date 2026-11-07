@@ -5,4 +5,6 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig({
   base: './',
   plugins: [vue()],
+  // three.js alone is ~600 kB minified; one chunk is fine for a single-page deck.
+  build: { chunkSizeWarningLimit: 900 },
 })
