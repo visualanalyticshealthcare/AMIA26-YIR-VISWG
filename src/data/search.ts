@@ -2,6 +2,13 @@
 
 export const reviewWindow = { start: 'Jul 1, 2025', end: 'Jun 30, 2026' }
 
+/** The whole space: every visualization / dashboard paper in the window, before any health or venue filter. */
+export const broadSearch = {
+  query: '(Data Visualization OR Dashboard) AND "2025/07/01":"2026/06/30"[dp]',
+  results: 6700,
+  label: '6,700+',
+}
+
 export const search = {
   database: 'PubMed',
   /** Shown on the slide, one clause per line. */
@@ -10,14 +17,11 @@ export const search = {
     '   OR data visualization[MeSH Terms])',
     'AND (Health OR Healthcare OR Medicine OR Public Health',
     '   OR primary care OR hospital OR clinical informatics)',
-    'AND "2025/07/01":"2026/06/30"[Date - Publication]',
-    'AND journal IN (J Biomed Inform, Appl Clin Inform,',
-    '   Int J Med Inform, J Am Med Inform Assoc, JAMIA Open,',
-    '   Methods Inf Med, ACI Open, Yearb Med Inform,',
-    '   IEEE Trans Vis Comput Graph)',
+    'AND "2025/07/01":"2026/06/30"[dp]',
+    'AND journal IN (JBI, ACI, IJMI, JAMIA, JAMIA Open,',
+    '   MIM, ACI Open, IMIA Yearbook, IEEE TVCG)',
   ],
   journals: 9,
-  results: 70,
 }
 
 export const inclusion = [
@@ -37,5 +41,18 @@ export const rounds = [
   { name: 'Phase 2 · Full text', detail: 'Read in full; select the strongest papers of the year' },
 ]
 
-/** What the full-text review weighed. */
-export const rubric = ['Novelty', 'Importance', 'Presentability']
+/** What the full-text review weighed, one sentence each. */
+export const rubric = [
+  {
+    name: 'Novelty',
+    detail: 'A genuinely new visualization technique or type of analysis, not an existing tool applied to new data.',
+  },
+  {
+    name: 'Importance',
+    detail: 'The significance of the health problem and the potential impact on care or public health.',
+  },
+  {
+    name: 'Presentability',
+    detail: 'Clear visual design backed by convincing evaluation or real-world use, worth showcasing to the field.',
+  },
+]

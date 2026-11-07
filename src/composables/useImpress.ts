@@ -12,8 +12,16 @@ export function useImpressState() {
   return { currentStepId: readonly(currentStepId), onOverview: readonly(onOverview) }
 }
 
-export function goto(id: string) {
+export function goto(id: string | number) {
   api?.goto(id)
+}
+
+/** Toolbar navigation. `last` resolves the final step from the DOM so it stays right as slides change. */
+export const nav = {
+  first: () => api?.goto(0),
+  prev: () => api?.prev(),
+  next: () => api?.next(),
+  last: () => api?.goto(document.querySelectorAll('#impress .step').length - 1),
 }
 
 /** Initialise impress.js once the steps are in the DOM. Call from the component that renders `#impress`. */

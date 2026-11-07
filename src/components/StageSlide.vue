@@ -27,11 +27,11 @@ defineProps<{ stage: Stage; index: number }>()
   display: flex;
   flex-direction: column;
   justify-content: center;
-  width: 760px;
+  width: 820px;
   height: 100%;
 }
 h2 {
-  font-size: 46px;
+  font-size: 52px;
   font-weight: 700;
   margin-top: 12px;
   min-height: 1.2em;
@@ -52,7 +52,7 @@ h2 {
 }
 .unit {
   font-family: var(--font-display);
-  font-size: 34px;
+  font-size: 38px;
   line-height: 1.25;
   color: var(--amia-text-dim);
 }
@@ -61,12 +61,12 @@ h2 {
   font-weight: 700;
 }
 .flow {
-  font-size: 24px;
+  font-size: 27px;
   color: var(--amia-pink);
   margin-bottom: 18px;
 }
 p {
-  font-size: 26px;
+  font-size: 30px;
   line-height: 1.4;
   color: var(--amia-text-dim);
   margin: 0 0 22px;

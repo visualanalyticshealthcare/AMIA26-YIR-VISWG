@@ -2,12 +2,11 @@
 import { reviewWindow } from './search'
 
 export const meta = {
+  workshop: 'The 17th Workshop on Visual Analytics in Healthcare',
+  workshopShort: 'VAHC',
   conference: 'AMIA 2026 Annual Symposium',
   location: 'Dallas, TX',
-  workshop: 'Visual Analytics in Healthcare',
-  workshopShort: 'VAHC',
   title: 'Year in Review',
-  subtitle: 'From every candidate paper to the few that moved the field',
-  presenters: ['Presenter Name', 'Co-presenter Name'],
+  url: 'https://visualanalyticshealthcare.github.io/AMIA26-YIR-VISWG/',
   reviewWindow: `${reviewWindow.start} – ${reviewWindow.end}`,
 }

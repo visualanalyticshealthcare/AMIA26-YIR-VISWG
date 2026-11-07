@@ -53,7 +53,7 @@ useTypeOnEnter(body, toHtml, props.speed)
   gap: 8px;
   padding: 10px 16px;
   background: rgba(111, 116, 245, 0.25);
-  font-size: 16px;
+  font-size: 17px;
   color: var(--amia-text-dim);
 }
 .bar i {
@@ -77,7 +77,7 @@ useTypeOnEnter(body, toHtml, props.speed)
   padding: 18px 22px;
   min-height: 2em;
   font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace;
-  font-size: 19px;
+  font-size: 21px;
   line-height: 1.5;
   white-space: pre-wrap;
   color: var(--amia-text);

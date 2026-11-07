@@ -3,7 +3,6 @@
  * Every number is shown as "<count> papers <meaning>", so it is clear what it counts.
  */
 import { byJournal, countAtLeast, records } from './records'
-import { search } from './search'
 
 export interface Stage {
   id: string
@@ -35,7 +34,7 @@ export const stages: Stage[] = [
     minStage: 0,
     count: n(0),
     meaning: 'entered manual review',
-    flow: `${n(0)} of the ${search.results} PubMed results`,
+    flow: `All ${n(0)} papers returned by the PubMed search`,
     description: 'Every paper was read and judged by the team, not filtered by keywords alone.',
     chips: byJournal.slice(0, 6).map(([j, c]) => `${j} · ${c}`),
   },

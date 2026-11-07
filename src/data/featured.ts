@@ -22,6 +22,8 @@ export interface Featured {
   tagline: string
   innovations: Innovation[]
   stats: { value: string; label: string }[]
+  /** Public link to the tool itself, when there is one. */
+  live?: string
 }
 
 const byPmid = (pmid: number) => {
@@ -36,6 +38,7 @@ export const featured: Featured[] = [
     record: byPmid(42243631),
     citation: '2026;33(8):1446–1456',
     cover: seqCover,
+    live: 'https://dashboard.tephi.texas.gov/public-dashboard',
     tagline: 'Turns untargeted wastewater sequencing into an early-warning dashboard anyone can read.',
     innovations: [
       {
@@ -65,27 +68,27 @@ export const featured: Featured[] = [
     record: byPmid(41348784),
     citation: '2026;32(1):1262–1272',
     cover: embryoCover,
-    tagline: 'Explainable visual analytics for one of the most consequential choices in IVF: which embryo to transfer.',
+    tagline: 'Visual design that lets embryologists judge embryo morphology and machine uncertainty at a glance.',
     innovations: [
       {
-        title: 'Follows the clinical workflow',
+        title: 'Cell shape plots',
         detail:
-          'Five dedicated views mirror how embryologists grade: fertilization, developmental timing, morphology, blastocyst quality, and comparison.',
+          'A new encoding: segmented cell outlines are centered and superimposed, colored by deviation from an ideal reference circle, so a healthy embryo collapses into one clean blue ring.',
       },
       {
-        title: 'New visual encoding',
+        title: 'Uncertainty made visible',
         detail:
-          'Cell shape plots superimpose centrally aligned cell outlines, color-coded by symmetry, so morphology is judged at a glance without occluding the image.',
+          'A stair-step stage timeline where clean steps mean confident detection and scattered bright points flag doubt; ring plots show pronuclei counts across frames.',
       },
       {
-        title: 'Explainable, not a black box',
+        title: 'One consistent visual language',
         detail:
-          'A classifier on human-interpretable features predicts live birth, with SHAP explanations and clinician overrides for every automated assessment.',
+          'Small-multiple embryo tiles with task-specific summary glyphs and a red-gray-blue viability scheme, reinforced by background color for pre-attentive scanning.',
       },
     ],
     stats: [
-      { value: '0.83', label: 'AUC for live birth (0.70 among transfer-eligible embryos)' },
-      { value: '5', label: 'workflow-aligned views' },
+      { value: '9,800', label: 'time-lapse images summarized in one 4-embryo case' },
+      { value: '0.83', label: 'AUC for live birth from interpretable features' },
       { value: '4', label: 'embryologists in the user study' },
     ],
   },

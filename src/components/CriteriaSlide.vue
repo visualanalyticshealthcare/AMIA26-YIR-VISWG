@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Screening criteria and the two-phase process. */
+/** Screening criteria, the two-phase process, and what the full-text review weighed. */
 import TypedText from './TypedText.vue'
 import { exclusion, inclusion, rounds, rubric } from '../data/search'
 </script>
@@ -31,34 +31,39 @@ import { exclusion, inclusion, rounds, rubric } from '../data/search'
         </div>
       </div>
     </div>
-    <div class="rubric">
-      Full-text review weighed:
-      <span v-for="d in rubric" :key="d" class="chip">{{ d }}</span>
-    </div>
+    <h3 class="weights">Full-text review weighed</h3>
+    <dl class="rubric">
+      <div v-for="d in rubric" :key="d.name">
+        <dt>{{ d.name }}</dt>
+        <dd>{{ d.detail }}</dd>
+      </div>
+    </dl>
   </div>
 </template>
 
 <style scoped>
 .col {
-  width: 820px;
+  width: 900px;
+  margin-top: -30px;
 }
 h2 {
-  font-size: 60px;
-  margin: 12px 0 24px;
+  font-size: 64px;
+  margin: 10px 0 18px;
   min-height: 1.2em;
 }
 .lists {
   display: grid;
   grid-template-columns: 1.35fr 1fr;
-  gap: 32px;
+  gap: 34px;
 }
 h3 {
-  font-size: 24px;
+  font-size: 22px;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
-h3.in {
+h3.in,
+h3.weights {
   color: var(--amia-cyan);
 }
 h3.out {
@@ -66,18 +71,17 @@ h3.out {
 }
 ul {
   margin: 0;
-  padding-left: 22px;
+  padding-left: 24px;
 }
 li {
-  font-size: 21px;
-  line-height: 1.4;
-  margin-bottom: 8px;
-  color: var(--amia-text);
+  font-size: 22px;
+  line-height: 1.35;
+  margin-bottom: 6px;
 }
 .rounds {
   display: flex;
-  gap: 28px;
-  margin: 26px 0 18px;
+  gap: 30px;
+  margin: 18px 0 16px;
 }
 .round {
   display: flex;
@@ -88,8 +92,8 @@ li {
   display: grid;
   place-items: center;
   flex: none;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   border: 1.5px solid var(--amia-cyan);
   font-family: var(--font-display);
@@ -97,18 +101,32 @@ li {
   color: var(--amia-cyan);
 }
 .round b {
-  font-size: 21px;
+  font-size: 22px;
 }
 .round p {
   margin: 4px 0 0;
-  font-size: 18px;
-  color: var(--amia-text-dim);
-}
-.rubric {
   font-size: 20px;
   color: var(--amia-text-dim);
 }
-.rubric .chip {
-  margin-left: 10px;
+.rubric {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 6px 18px;
+  margin: 0;
+}
+.rubric > div {
+  display: contents;
+}
+dt {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 21px;
+  color: var(--amia-text);
+}
+dd {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.35;
+  color: var(--amia-text-dim);
 }
 </style>

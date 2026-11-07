@@ -63,3 +63,9 @@
     opacity 0.25s ease,
     visibility 0s linear 0.25s;
 }
+
+/* The closing overview is a huge (scale 9.5) step; at the usual faint "future" opacity it would ghost through
+   every other slide, so keep it fully hidden until the camera actually arrives. */
+.impress-enabled .step.overview:not(.active) {
+  opacity: 0;
+}

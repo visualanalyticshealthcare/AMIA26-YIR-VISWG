@@ -1,15 +1,15 @@
 <script setup lang="ts">
-/** Search strategy: the PubMed query typed out in a terminal, and what it returned. */
+/** Search strategy: from the whole visualization literature to the targeted health query, typed out in a terminal. */
 import TerminalWindow, { type TermLine } from './TerminalWindow.vue'
 import TypedText from './TypedText.vue'
-import { search, reviewWindow } from '../data/search'
+import { broadSearch, reviewWindow, search } from '../data/search'
 import { countAtLeast } from '../data/records'
 
 const lines: TermLine[] = [
+  { cmd: broadSearch.query },
+  { em: `→ ${broadSearch.label} visualization & dashboard papers` },
   ...search.queryLines.map((q, i) => (i === 0 ? { cmd: q } : { out: q })),
-  { out: '' },
-  { em: `→ ${search.results} results` },
-  { em: `→ ${countAtLeast(0)} papers in full manual review` },
+  { em: `→ ${countAtLeast(0)} papers, every one reviewed by hand` },
 ]
 </script>
 
@@ -28,26 +28,26 @@ const lines: TermLine[] = [
 
 <style scoped>
 .col {
-  width: 800px;
+  width: 940px;
 }
 h2 {
-  font-size: 60px;
-  margin: 12px 0 26px;
+  font-size: 56px;
+  margin: 10px 0 18px;
   min-height: 1.2em;
 }
 .facts {
   display: flex;
-  gap: 44px;
-  margin-bottom: 26px;
+  gap: 48px;
+  margin-bottom: 18px;
 }
 .facts b {
   display: block;
   font-family: var(--font-display);
-  font-size: 44px;
+  font-size: 46px;
   color: var(--amia-cyan);
 }
 .facts span {
-  font-size: 18px;
+  font-size: 21px;
   color: var(--amia-text-dim);
 }
 </style>

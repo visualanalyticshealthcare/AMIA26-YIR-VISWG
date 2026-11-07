@@ -31,6 +31,12 @@ const r = props.paper.record
             <a :href="`https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/`" target="_blank" rel="noopener">{{ r.pmid }}</a>
           </dd>
         </div>
+        <div v-if="paper.live">
+          <dt>Live</dt>
+          <dd>
+            <a :href="paper.live" target="_blank" rel="noopener">{{ paper.live.replace(/^https?:\/\//, '') }}</a>
+          </dd>
+        </div>
         <div class="authors">
           <dt>Authors</dt>
           <dd>{{ r.authors }}</dd>
@@ -61,23 +67,23 @@ const r = props.paper.record
 <style scoped>
 .featured {
   display: flex;
-  gap: 60px;
+  gap: 50px;
   height: 100%;
-  margin-top: -20px;
+  margin: -10px -40px 0 0;
 }
 .info {
   flex: 1;
   min-width: 0;
 }
 h2 {
-  font-size: 38px;
-  line-height: 1.18;
+  font-size: 42px;
+  line-height: 1.16;
   margin: 10px 0 10px;
   min-height: 2.36em;
 }
 .tagline {
   margin: 0 0 18px;
-  font-size: 22px;
+  font-size: 24px;
   color: var(--amia-pink);
 }
 .meta {
@@ -85,7 +91,7 @@ h2 {
   grid-template-columns: auto 1fr;
   gap: 4px 18px;
   margin: 0 0 18px;
-  font-size: 17px;
+  font-size: 19px;
 }
 .meta > div {
   display: contents;
@@ -94,8 +100,8 @@ dt {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-size: 13px;
-  line-height: 1.9;
+  font-size: 14px;
+  line-height: 1.95;
   color: var(--amia-cyan);
 }
 dd {
@@ -103,7 +109,7 @@ dd {
   color: var(--amia-text);
 }
 .authors dd {
-  font-size: 14px;
+  font-size: 16px;
   line-height: 1.45;
   color: var(--amia-text-dim);
 }
@@ -114,7 +120,7 @@ a {
   text-underline-offset: 3px;
 }
 h3 {
-  font-size: 18px;
+  font-size: 19px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--amia-cyan);
@@ -125,9 +131,9 @@ h3 {
   padding-left: 24px;
 }
 .innovations li {
-  font-size: 18px;
-  line-height: 1.42;
-  margin-bottom: 7px;
+  font-size: 20px;
+  line-height: 1.38;
+  margin-bottom: 6px;
   color: var(--amia-text-dim);
 }
 .innovations b {
@@ -147,12 +153,12 @@ h3 {
 .stats span {
   display: block;
   max-width: 220px;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--amia-text-dim);
 }
 .cover {
   flex: none;
-  width: 470px;
+  width: 440px;
   margin: 10px 0 0;
   transform: perspective(1600px) rotateY(-10deg);
   transform-origin: left center;

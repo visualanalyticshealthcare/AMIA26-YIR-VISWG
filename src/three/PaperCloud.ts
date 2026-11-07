@@ -1,5 +1,6 @@
 /**
- * Persistent Three.js point cloud: one glowing point per paper in the review.
+ * Persistent Three.js point cloud: one glowing point per paper in the manual review, floating inside a faint
+ * background of ~3,350 points that stands for the 6,700+ visualization / dashboard papers published in the window.
  *
  * It lives on its own fixed canvas with its own render loop, completely independent of impress.js.
  * Slides only call `setScene()`; every point then eases toward the target position, color, and opacity
@@ -8,31 +9,39 @@
 import * as THREE from 'three'
 import { byJournal, type PaperRecord } from '../data/records'
 
-export type CloudScene =
-  | 'hidden'
-  | 'sources'
-  | 'criteria'
-  | 'stage0'
-  | 'stage1'
-  | 'stage2'
-  | 'stage3'
-  | 'papers'
-  | 'overview'
-  | 'thanks'
+export type CloudScene = 'hidden' | 'focus' | 'sources' | 'criteria' | 'stage0' | 'stage1' | 'stage2' | 'stage3' | 'overview'
 
-const C = {
-  pubmed: new THREE.Color('#8795f4'),
-  ieee: new THREE.Color('#8ee9f2'),
-  neutral: new THREE.Color('#c9c3f2'),
-  kept: new THREE.Color('#8ee9f2'),
-  dropped: new THREE.Color('#6f74f5'),
-  pink: new THREE.Color('#f27ac9'),
-  green: new THREE.Color('#5ef0b5'),
+export const COLORS = {
+  background: '#8795f4',
+  informatics: '#8795f4',
+  tvcg: '#8ee9f2',
+  neutral: '#c9c3f2',
+  kept: '#8ee9f2',
+  uncertain: '#5ef0b5',
+  dropped: '#6f74f5',
+  star: '#f27ac9',
 }
-// Funnel layers shown to the audience: reviewed, passed screening, selected (stage 2 folds into "passed screening").
-const LAYER_COLORS = [C.dropped, C.pubmed, C.pubmed, C.kept]
-const layerOf = (stage: number) => [0, 1, 1, 2][stage]!
+const C = Object.fromEntries(Object.entries(COLORS).map(([k, v]) => [k, new THREE.Color(v)])) as Record<
+  keyof typeof COLORS,
+  THREE.Color
+>
 const GOLDEN = Math.PI * (3 - Math.sqrt(5))
+
+/** How visible the background "whole literature" layer is in each scene. */
+const BACKGROUND_ALPHA: Record<CloudScene, number> = {
+  hidden: 1,
+  focus: 0.08,
+  sources: 0.9,
+  criteria: 0.5,
+  stage0: 0.45,
+  stage1: 0.35,
+  stage2: 0.3,
+  stage3: 0.3,
+  overview: 0.45,
+}
+
+/** Each background point stands for this many papers. */
+export const BACKGROUND_RATIO = 2
 
 interface Target {
   pos: THREE.Vector3
@@ -58,6 +67,7 @@ const vertexShader = /* glsl */ `
 `
 
 const fragmentShader = /* glsl */ `
+  uniform float uAlpha;
   varying vec3 vColor;
   varying float vAlpha;
   void main() {
@@ -65,7 +75,7 @@ const fragmentShader = /* glsl */ `
     if (d > 1.0) discard;
     float core = 1.0 - smoothstep(0.0, 0.42, d); // edge0 must be < edge1: reversed edges are undefined in GLSL
     float glow = pow(1.0 - d, 2.2) * 0.55;
-    gl_FragColor = vec4(vColor * (core + glow) + core * 0.35, (core + glow) * vAlpha);
+    gl_FragColor = vec4(vColor * (core + glow) + core * 0.35, (core + glow) * vAlpha * uAlpha);
   }
 `
 
@@ -90,7 +100,7 @@ function makePoints(count: number) {
   const material = new THREE.ShaderMaterial({
     vertexShader,
     fragmentShader,
-    uniforms: { uScale: { value: 1 } },
+    uniforms: { uScale: { value: 1 }, uAlpha: { value: 1 } },
     transparent: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
@@ -101,13 +111,15 @@ function makePoints(count: number) {
   return points
 }
 
+const uniformsOf = (p: THREE.Points) => (p.material as THREE.ShaderMaterial).uniforms
+
 export class PaperCloud {
   private renderer: THREE.WebGLRenderer
   private scene = new THREE.Scene()
   private camera = new THREE.PerspectiveCamera(40, 1, 0.1, 400)
   private group = new THREE.Group()
   private papers: THREE.Points
-  private dust: THREE.Points
+  private background: THREE.Points
   private n: number
   private targets: Target[] = []
   private cur: { pos: THREE.Vector3; color: THREE.Color; alpha: number; size: number }[]
@@ -116,6 +128,9 @@ export class PaperCloud {
   private sceneName: CloudScene = 'hidden'
   private changedAt = 0
   private tiltTarget = 0.15
+  private spin = 1
+  private hovering = false
+  private selected: number | null = null
   private raf = 0
   private last = 0
   private clock = 0
@@ -124,10 +139,12 @@ export class PaperCloud {
   private stagePos: THREE.Vector3[][] = []
   /** Journal -> cluster index, largest journal first. */
   private journalIndex = new Map<string, number>()
+  private tmp = new THREE.Vector3()
 
   constructor(
     private canvas: HTMLCanvasElement,
     private records: PaperRecord[],
+    backgroundCount: number,
   ) {
     this.n = records.length
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
@@ -135,12 +152,10 @@ export class PaperCloud {
     this.renderer.setPixelRatio(Math.min(2, window.devicePixelRatio))
     this.camera.position.set(0, 0, 34)
 
+    this.background = this.buildBackground(backgroundCount)
     this.papers = makePoints(this.n)
-    this.group.add(this.papers)
+    this.group.add(this.background, this.papers)
     this.scene.add(this.group)
-
-    this.dust = this.buildDust(900)
-    this.scene.add(this.dust)
 
     const rand = rng(42)
     this.phase = Float32Array.from({ length: this.n }, () => rand() * Math.PI * 2)
@@ -166,14 +181,64 @@ export class PaperCloud {
     this.tiltTarget = name === 'overview' ? 0.42 : 0.15
   }
 
+  /** Highlight one paper (index into records), or none. */
+  select(i: number | null) {
+    this.selected = i
+  }
+
+  /**
+   * Track the pointer (client coordinates): rotation pauses while it is over the cloud.
+   * Returns the index of the paper point under the pointer, if any.
+   */
+  pointer(x: number, y: number): number | null {
+    const { cx, cy, r } = this.screenDisc()
+    this.hovering = Math.hypot(x - cx, y - cy) < r
+    return this.hovering ? this.pick(x, y) : null
+  }
+
+  pointerLeave() {
+    this.hovering = false
+  }
+
   dispose() {
     cancelAnimationFrame(this.raf)
     this.ro?.disconnect()
-    this.papers.geometry.dispose()
-    ;(this.papers.material as THREE.Material).dispose()
-    this.dust.geometry.dispose()
-    ;(this.dust.material as THREE.Material).dispose()
+    for (const p of [this.papers, this.background]) {
+      p.geometry.dispose()
+      ;(p.material as THREE.Material).dispose()
+    }
     this.renderer.dispose()
+  }
+
+  // ---------------------------------------------------------------- picking
+
+  /** Screen-space disc covering the cloud, in CSS pixels. */
+  private screenDisc() {
+    const rect = this.canvas.getBoundingClientRect()
+    const c = this.tmp.copy(this.group.position).project(this.camera)
+    const cx = rect.left + ((c.x + 1) / 2) * rect.width
+    const cy = rect.top + ((1 - c.y) / 2) * rect.height
+    const pxPerUnit = rect.height / (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.position.z)
+    return { cx, cy, r: 12 * pxPerUnit }
+  }
+
+  private pick(x: number, y: number): number | null {
+    const rect = this.canvas.getBoundingClientRect()
+    const pos = this.papers.geometry.getAttribute('position') as THREE.BufferAttribute
+    let best: number | null = null
+    let bestD = 22 // px
+    for (let i = 0; i < this.n; i++) {
+      if (this.cur[i]!.alpha < 0.3) continue
+      this.tmp.fromBufferAttribute(pos, i).applyMatrix4(this.group.matrixWorld).project(this.camera)
+      const sx = rect.left + ((this.tmp.x + 1) / 2) * rect.width
+      const sy = rect.top + ((1 - this.tmp.y) / 2) * rect.height
+      const d = Math.hypot(sx - x, sy - y)
+      if (d < bestD) {
+        bestD = d
+        best = i
+      }
+    }
+    return best
   }
 
   // ---------------------------------------------------------------- layouts
@@ -188,7 +253,7 @@ export class PaperCloud {
       kept.forEach(({ i }, k) => (layout[i] = fibonacciSphere(k, kept.length, radii[s]!, jitter[i]!)))
       this.stagePos[s] = layout
     }
-    // Shortlist: a tilted ring, best scores first.
+    // Selected papers: a tilted ring, most representative first.
     const top = this.records
       .map((r, i) => ({ r, i }))
       .filter(({ r }) => r.stage === 3)
@@ -203,22 +268,24 @@ export class PaperCloud {
 
   private computeTargets(name: CloudScene): Target[] {
     const rand = rng(1234)
+    const star = (r: PaperRecord) => r.stage === 3 && r.score?.total === 9
     return this.records.map((r, i) => {
       const t: Target = { pos: this.stagePos[0]![i]!.clone(), color: C.neutral, alpha: 0.9, size: 2.2 }
       switch (name) {
         case 'hidden':
+        case 'focus':
           t.pos.multiplyScalar(0.25)
           t.alpha = 0
           break
         case 'sources': {
-          // One cluster per journal, arranged on a ring: the shape of the 68-paper review set by venue.
+          // One cluster per journal, arranged on a ring: the shape of the review set by venue.
           const k = this.journalIndex.get(r.journal)!
           const members = this.records.filter((x) => x.journal === r.journal)
           const a = (k / this.journalIndex.size) * Math.PI * 2
           const center = new THREE.Vector3(Math.cos(a) * 7.5, Math.sin(a) * 5.5, Math.sin(a * 2) * 2)
           const radius = 0.9 + Math.sqrt(members.length) * 0.75
           t.pos = fibonacciSphere(members.indexOf(r), members.length, radius, 0.7 + rand() * 0.3).add(center)
-          t.color = r.venue === 'TVCG' ? C.ieee : C.pubmed
+          t.color = r.venue === 'TVCG' ? C.tvcg : C.informatics
           break
         }
         case 'criteria':
@@ -231,49 +298,31 @@ export class PaperCloud {
           const s = Number(name.slice(5))
           if (r.stage >= s) {
             t.pos = this.stagePos[s]![i]!.clone()
-            if (s === 0) t.color = r.venue === 'TVCG' ? C.ieee : C.pubmed
+            if (s === 0) t.color = r.venue === 'TVCG' ? C.tvcg : C.informatics
             else if (s === 3) {
-              t.color = r.score?.total === 9 ? C.pink : C.kept
+              t.color = star(r) ? C.star : C.kept
               t.size = 3.8
-            } else t.color = r.uncertain && s === 1 ? C.green : C.kept
+            } else t.color = r.uncertain && s === 1 ? C.uncertain : C.kept
           } else {
             // Fell out of the funnel: drift outward and down from where it last was, leaving a faint trace.
             const from = this.stagePos[Math.min(r.stage, 1)]![i]!
             t.pos = from.clone().multiplyScalar(1.55).add(new THREE.Vector3(0, -7 - (s - r.stage) * 2, 0))
             t.color = C.dropped
-            t.alpha = 0.1
+            t.alpha = 0.18
             t.size = 1.4
           }
           break
         }
-        case 'papers':
-          if (r.stage === 3) {
-            t.pos = this.stagePos[3]![i]!.clone().multiplyScalar(1.4)
-            t.color = r.score?.total === 9 ? C.pink : C.kept
-            t.alpha = 0.3
-            t.size = 2.6
-          } else {
-            t.alpha = 0
-          }
-          break
         case 'overview': {
-          // Each paper sits on the funnel layer where it stopped.
-          const layerY = [6, 0, -6.5][layerOf(r.stage)]!
-          const layerR = [10, 7, 3.6][layerOf(r.stage)]!
+          // Each paper sits on the funnel layer where it stopped: reviewed, passed screening, selected.
+          const layer = [0, 1, 1, 2][r.stage]!
+          const layerY = [6, 0, -6.5][layer]!
+          const layerR = [10, 7, 3.6][layer]!
           const a = i * GOLDEN * 3
           const rr = layerR * (0.82 + rand() * 0.18)
           t.pos = new THREE.Vector3(Math.cos(a) * rr, layerY + (rand() - 0.5) * 0.8, Math.sin(a) * rr)
-          t.color = r.stage === 3 && r.score?.total === 9 ? C.pink : LAYER_COLORS[r.stage]!
+          t.color = star(r) ? C.star : [C.dropped, C.informatics, C.kept][layer]!
           t.size = r.stage === 3 ? 3.4 : 2
-          break
-        }
-        case 'thanks': {
-          const arm = i % 2
-          const a = (i / this.n) * Math.PI * 3 + arm * Math.PI
-          const rr = 1.5 + (i / this.n) * 10
-          t.pos = new THREE.Vector3(Math.cos(a) * rr, (rand() - 0.5) * 1.5, Math.sin(a) * rr)
-          t.color = LAYER_COLORS[r.stage]!
-          t.alpha = 0.75
           break
         }
       }
@@ -281,7 +330,7 @@ export class PaperCloud {
     })
   }
 
-  private buildDust(count: number) {
+  private buildBackground(count: number) {
     const pts = makePoints(count)
     const rand = rng(99)
     const g = pts.geometry
@@ -289,12 +338,16 @@ export class PaperCloud {
     const col = g.getAttribute('aColor') as THREE.BufferAttribute
     const alp = g.getAttribute('aAlpha') as THREE.BufferAttribute
     const siz = g.getAttribute('aSize') as THREE.BufferAttribute
+    const v = new THREE.Vector3()
     for (let i = 0; i < count; i++) {
-      pos.setXYZ(i, (rand() - 0.5) * 110, (rand() - 0.5) * 70, -rand() * 90 + 10)
-      const c = rand() > 0.85 ? C.ieee : C.pubmed
+      // Random direction, denser toward the middle: the wider literature the review set was drawn from.
+      v.set(rand() * 2 - 1, rand() * 2 - 1, rand() * 2 - 1).normalize()
+      const r = 2 + 15 * Math.pow(rand(), 0.75)
+      pos.setXYZ(i, v.x * r * 1.05, v.y * r * 0.85, v.z * r)
+      const c = rand() > 0.8 ? C.neutral : C.background
       col.setXYZ(i, c.r, c.g, c.b)
-      alp.setX(i, 0.12 + rand() * 0.2)
-      siz.setX(i, 0.12 + rand() * 0.18)
+      alp.setX(i, 0.16 + rand() * 0.18)
+      siz.setX(i, 0.28 + rand() * 0.3)
     }
     return pts
   }
@@ -312,8 +365,8 @@ export class PaperCloud {
     // Text sits on the left of every slide; keep the cloud on the right.
     this.group.position.x = halfH * this.camera.aspect * 0.42
     const scale = (h * this.renderer.getPixelRatio()) / (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)))
-    ;(this.papers.material as THREE.ShaderMaterial).uniforms.uScale!.value = scale
-    ;(this.dust.material as THREE.ShaderMaterial).uniforms.uScale!.value = scale
+    uniformsOf(this.papers).uScale!.value = scale
+    uniformsOf(this.background).uScale!.value = scale
   }
 
   private tick = (now: number) => {
@@ -340,22 +393,27 @@ export class PaperCloud {
         c.size += (t.size - c.size) * k
       }
       const p = this.phase[i]!
-      const wob = 0.18
+      const wob = this.hovering ? 0.04 : 0.18 // calm the wobble too, so a point holds still under the cursor
       pos.setXYZ(
         i,
         c.pos.x + Math.sin(this.clock * 0.6 + p) * wob,
         c.pos.y + Math.cos(this.clock * 0.5 + p * 1.3) * wob,
         c.pos.z + Math.sin(this.clock * 0.4 + p * 0.7) * wob,
       )
-      col.setXYZ(i, c.color.r, c.color.g, c.color.b)
-      alp.setX(i, c.alpha)
-      siz.setX(i, c.size)
+      const sel = i === this.selected
+      col.setXYZ(i, sel ? 1 : c.color.r, sel ? 1 : c.color.g, sel ? 1 : c.color.b)
+      alp.setX(i, sel ? Math.max(c.alpha, 0.95) : c.alpha)
+      siz.setX(i, sel ? c.size * 1.9 : c.size)
     }
     pos.needsUpdate = col.needsUpdate = alp.needsUpdate = siz.needsUpdate = true
 
-    this.group.rotation.y += dt * 0.07
+    const bg = uniformsOf(this.background).uAlpha!
+    bg.value += (BACKGROUND_ALPHA[this.sceneName] - bg.value) * k
+
+    // Ease rotation to a stop while the pointer is over the cloud, and back up when it leaves.
+    this.spin += ((this.hovering ? 0 : 1) - this.spin) * (1 - Math.exp(-dt * 6))
+    this.group.rotation.y += dt * 0.07 * this.spin
     this.group.rotation.x += (this.tiltTarget - this.group.rotation.x) * k
-    this.dust.rotation.y = Math.sin(this.clock * 0.03) * 0.15
     this.renderer.render(this.scene, this.camera)
   }
 }
