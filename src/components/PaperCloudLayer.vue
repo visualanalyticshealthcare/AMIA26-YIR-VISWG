@@ -32,16 +32,13 @@ const background: LegendItem = {
   label: `Visualization & dashboard papers in the same year: ${broadSearch.label} (1 faint dot ≈ ${BACKGROUND_RATIO})`,
   faint: true,
 }
-const venue: LegendItem[] = [
-  { color: COLORS.tvcg, label: 'IEEE TVCG' },
-  { color: COLORS.informatics, label: 'Clinical informatics journals' },
-]
+const reviewed: LegendItem = { color: COLORS.paper, label: 'Paper in manual review' }
 const LEGENDS: Record<CloudScene, LegendItem[]> = {
   hidden: [background],
   focus: [],
-  sources: [...venue, background],
+  sources: [{ ...reviewed, label: 'Paper in manual review, grouped by journal' }, background],
   criteria: [{ color: COLORS.neutral, label: 'Paper in manual review' }, background],
-  stage0: [...venue, background],
+  stage0: [reviewed, background],
   stage1: [
     { color: COLORS.kept, label: 'Passed screening' },
     { color: COLORS.uncertain, label: 'Kept as uncertain' },
@@ -58,7 +55,7 @@ const LEGENDS: Record<CloudScene, LegendItem[]> = {
   overview: [
     { color: COLORS.star, label: 'Most representative' },
     { color: COLORS.kept, label: 'Selected' },
-    { color: COLORS.informatics, label: 'Passed screening' },
+    { color: COLORS.screened, label: 'Passed screening' },
     { color: COLORS.dropped, label: 'Reviewed only' },
     background,
   ],
@@ -156,7 +153,7 @@ const pubmed = (pmid: number) => `https://pubmed.ncbi.nlm.nih.gov/${pmid}/`
 }
 .legend {
   position: fixed;
-  left: 71%;
+  left: 75%;
   bottom: 84px;
   z-index: 11;
   display: flex;

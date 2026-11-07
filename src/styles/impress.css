@@ -25,7 +25,7 @@
 .step {
   width: 1600px;
   height: 900px;
-  padding: 80px 100px;
+  padding: 80px 100px 80px 40px;
   color: var(--amia-text);
 }
 

@@ -65,7 +65,6 @@ def main(xlsx: str) -> None:
                 "journal": journal,
                 "year": int(r[8]),
                 "doi": r[12],
-                "venue": "TVCG" if "IEEE" in journal else "Informatics",
                 "stage": stage,
                 "uncertain": "?" in str(r[0] or ""),
                 # Full-text outcome for papers that passed round 1: scored, excluded, or not yet scored.

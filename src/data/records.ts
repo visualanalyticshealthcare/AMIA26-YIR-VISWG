@@ -19,8 +19,6 @@ export interface PaperRecord {
   journal: string
   year: number
   doi: string | null
-  /** Venue family: IEEE TVCG vs. the clinical informatics journals. */
-  venue: 'TVCG' | 'Informatics'
   /** Furthest stage reached: 0 identified, 1 passed title/abstract, 2 full text scored, 3 shortlisted. */
   stage: 0 | 1 | 2 | 3
   /** Kept at title/abstract but flagged as uncertain by the reviewer. */

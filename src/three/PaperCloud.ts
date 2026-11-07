@@ -13,8 +13,8 @@ export type CloudScene = 'hidden' | 'focus' | 'sources' | 'criteria' | 'stage0' 
 
 export const COLORS = {
   background: '#8795f4',
-  informatics: '#8795f4',
-  tvcg: '#8ee9f2',
+  paper: '#8ee9f2',
+  screened: '#8795f4',
   neutral: '#c9c3f2',
   kept: '#8ee9f2',
   uncertain: '#5ef0b5',
@@ -278,14 +278,14 @@ export class PaperCloud {
           t.alpha = 0
           break
         case 'sources': {
-          // One cluster per journal, arranged on a ring: the shape of the review set by venue.
+          // One cluster per journal, arranged on a ring; every journal is drawn the same way.
           const k = this.journalIndex.get(r.journal)!
           const members = this.records.filter((x) => x.journal === r.journal)
           const a = (k / this.journalIndex.size) * Math.PI * 2
           const center = new THREE.Vector3(Math.cos(a) * 7.5, Math.sin(a) * 5.5, Math.sin(a * 2) * 2)
           const radius = 0.9 + Math.sqrt(members.length) * 0.75
           t.pos = fibonacciSphere(members.indexOf(r), members.length, radius, 0.7 + rand() * 0.3).add(center)
-          t.color = r.venue === 'TVCG' ? C.tvcg : C.informatics
+          t.color = C.paper
           break
         }
         case 'criteria':
@@ -298,7 +298,7 @@ export class PaperCloud {
           const s = Number(name.slice(5))
           if (r.stage >= s) {
             t.pos = this.stagePos[s]![i]!.clone()
-            if (s === 0) t.color = r.venue === 'TVCG' ? C.tvcg : C.informatics
+            if (s === 0) t.color = C.paper
             else if (s === 3) {
               t.color = star(r) ? C.star : C.kept
               t.size = 3.8
@@ -321,7 +321,7 @@ export class PaperCloud {
           const a = i * GOLDEN * 3
           const rr = layerR * (0.82 + rand() * 0.18)
           t.pos = new THREE.Vector3(Math.cos(a) * rr, layerY + (rand() - 0.5) * 0.8, Math.sin(a) * rr)
-          t.color = star(r) ? C.star : [C.dropped, C.informatics, C.kept][layer]!
+          t.color = star(r) ? C.star : [C.dropped, C.screened, C.kept][layer]!
           t.size = r.stage === 3 ? 3.4 : 2
           break
         }
@@ -363,7 +363,7 @@ export class PaperCloud {
     this.camera.updateProjectionMatrix()
     const halfH = Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)) * this.camera.position.z
     // Text sits on the left of every slide; keep the cloud on the right.
-    this.group.position.x = halfH * this.camera.aspect * 0.42
+    this.group.position.x = halfH * this.camera.aspect * 0.5
     const scale = (h * this.renderer.getPixelRatio()) / (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2)))
     uniformsOf(this.papers).uScale!.value = scale
     uniformsOf(this.background).uScale!.value = scale

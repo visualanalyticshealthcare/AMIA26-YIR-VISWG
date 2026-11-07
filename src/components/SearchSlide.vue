@@ -19,7 +19,7 @@ const lines: TermLine[] = [
     <h2><TypedText text="Where the papers came from" /></h2>
     <div class="facts">
       <div><b>{{ search.database }}</b><span>database</span></div>
-      <div><b>{{ search.journals }}</b><span>journals incl. IEEE TVCG</span></div>
+      <div><b>{{ search.journals }}</b><span>journals searched</span></div>
       <div><b>12 mo</b><span>{{ reviewWindow.start }} – {{ reviewWindow.end }}</span></div>
     </div>
     <TerminalWindow title="pubmed · esearch" :lines="lines" />
