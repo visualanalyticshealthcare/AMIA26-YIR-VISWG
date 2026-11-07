@@ -4,6 +4,7 @@
  * (PaperCloudLayer) that follows the active slide. Keep this template static (see composables/useImpress.ts).
  */
 import CriteriaSlide from './components/CriteriaSlide.vue'
+import FeaturedPaperSlide from './components/FeaturedPaperSlide.vue'
 import ImpressStep from './components/ImpressStep.vue'
 import PaperCloudLayer from './components/PaperCloudLayer.vue'
 import PresentationHud from './components/PresentationHud.vue'
@@ -13,6 +14,7 @@ import StageSlide from './components/StageSlide.vue'
 import TypedText from './components/TypedText.vue'
 import { useImpressRoot } from './composables/useImpress'
 import { slidePose } from './data/layout'
+import { featured } from './data/featured'
 import { meta } from './data/meta'
 import { stages } from './data/pipeline'
 import { shortlist, countAtLeast } from './data/records'
@@ -21,7 +23,7 @@ import type { CloudScene } from './three/PaperCloud'
 useImpressRoot('impress')
 
 // Slide order along the dive. Each entry gets the next pose on the spiral.
-const order = ['title', 'search', 'criteria', ...stages.map((s) => s.id), 'papers', 'thanks']
+const order = ['title', 'search', 'criteria', ...stages.map((s) => s.id), ...featured.map((f) => f.id), 'papers', 'thanks']
 const pose = (id: string) => slidePose(order.indexOf(id))
 
 const stageSteps = stages.map((stage, i) => ({
@@ -37,6 +39,8 @@ const cloudScenes: Record<string, CloudScene> = {
   search: 'sources',
   criteria: 'criteria',
   ...Object.fromEntries(stages.map((s) => [s.id, `stage${s.minStage}` as CloudScene])),
+  // Featured papers: the cloud steps back so the cover pages stay clear.
+  ...Object.fromEntries(featured.map((f) => [f.id, 'hidden' as CloudScene])),
   papers: 'papers',
   overview: 'overview',
   thanks: 'thanks',
@@ -73,6 +77,10 @@ const cloudScenes: Record<string, CloudScene> = {
 
     <ImpressStep v-for="s in stageSteps" :id="s.stage.id" :key="s.stage.id" v-bind="s.pose">
       <StageSlide :stage="s.stage" :index="s.index" />
+    </ImpressStep>
+
+    <ImpressStep v-for="(f, i) in featured" :id="f.id" :key="f.id" v-bind="pose(f.id)">
+      <FeaturedPaperSlide :paper="f" :index="i" :total="featured.length" />
     </ImpressStep>
 
     <ImpressStep id="papers" v-bind="pose('papers')">
