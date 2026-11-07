@@ -9,7 +9,7 @@ const lines: TermLine[] = [
   { cmd: broadSearch.query },
   { em: `→ ${broadSearch.label} visualization & dashboard papers` },
   ...search.queryLines.map((q, i) => (i === 0 ? { cmd: q } : { out: q })),
-  { em: `→ ${countAtLeast(0)} papers, every one reviewed by hand` },
+  { em: `→ ${countAtLeast(0)} papers, all reviewed manually` },
 ]
 </script>
 

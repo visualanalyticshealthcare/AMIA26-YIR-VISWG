@@ -1,6 +1,6 @@
 /**
- * The two most representative papers, each with its own slide.
- * Bibliographic fields come from records.json; the "why it stands out" copy is written from the papers themselves.
+ * The two highlighted papers, each with its own slide.
+ * Bibliographic fields come from records.json; the "notable aspects" copy is written from the papers themselves.
  * Covers are first-page renders (src/assets/papers), shown for commentary in the review.
  */
 import embryoCover from '../assets/papers/embryoprofiler-cover.png'
@@ -39,22 +39,22 @@ export const featured: Featured[] = [
     citation: '2026;33(8):1446–1456',
     cover: seqCover,
     live: 'https://dashboard.tephi.texas.gov/public-dashboard',
-    tagline: 'Turns untargeted wastewater sequencing into an early-warning dashboard anyone can read.',
+    tagline: 'A public dashboard that presents untargeted wastewater sequencing results for community monitoring.',
     innovations: [
       {
-        title: 'First of its kind',
+        title: 'Sequencing-based monitoring',
         detail:
-          'The first public dashboard built on agnostic genomic sequencing instead of single-pathogen PCR, covering dozens of human viruses at once.',
+          'Described by the authors as the first public dashboard built on untargeted genomic sequencing rather than single-pathogen PCR, reporting on dozens of human viruses.',
       },
       {
-        title: 'One dataset, three audiences',
+        title: 'Three audience tiers',
         detail:
-          'A 3-tier design: trend lines and level indicators for the public, all-site aggregates for health officials, variants and genomic context for experts.',
+          'Trend lines and level indicators for the public, all-site aggregates for health officials, and variant and genomic detail for experts.',
       },
       {
-        title: 'Proven in the field',
+        title: 'Reported use cases',
         detail:
-          'Flagged Mpox in El Paso weeks before the first clinical case, and measles months before the West Texas outbreak.',
+          'The authors report an Mpox detection in El Paso weeks before the first clinical case, and a measles detection months before the West Texas outbreak.',
       },
     ],
     stats: [
@@ -68,27 +68,27 @@ export const featured: Featured[] = [
     record: byPmid(41348784),
     citation: '2026;32(1):1262–1272',
     cover: embryoCover,
-    tagline: 'Visual design that lets embryologists judge embryo morphology and machine uncertainty at a glance.',
+    tagline: 'A visual analytics system that supports embryologists in assessing embryo development from time-lapse microscopy.',
     innovations: [
       {
         title: 'Cell shape plots',
         detail:
-          'A new encoding: segmented cell outlines are centered and superimposed, colored by deviation from an ideal reference circle, so a healthy embryo collapses into one clean blue ring.',
+          'Segmented cell outlines are centered, superimposed, and colored by deviation from a reference circle; symmetric cells converge to a single ring.',
       },
       {
-        title: 'Uncertainty made visible',
+        title: 'Uncertainty encoding',
         detail:
-          'A stair-step stage timeline where clean steps mean confident detection and scattered bright points flag doubt; ring plots show pronuclei counts across frames.',
+          'A stage timeline in which regular steps indicate consistent detection and scattered points indicate uncertainty; ring plots summarize pronuclei counts across frames.',
       },
       {
-        title: 'One consistent visual language',
+        title: 'Consistent visual encoding',
         detail:
-          'Small-multiple embryo tiles with task-specific summary glyphs and a red-gray-blue viability scheme, reinforced by background color for pre-attentive scanning.',
+          'Small-multiple embryo tiles with task-specific summary glyphs, and a red-gray-blue scheme for features associated with lower or higher viability.',
       },
     ],
     stats: [
-      { value: '9,800', label: 'time-lapse images summarized in one 4-embryo case' },
-      { value: '0.83', label: 'AUC for live birth from interpretable features' },
+      { value: '9,800', label: 'time-lapse images in the 4-embryo case study' },
+      { value: '0.83', label: 'reported AUC for predicting live birth' },
       { value: '4', label: 'embryologists in the user study' },
     ],
   },

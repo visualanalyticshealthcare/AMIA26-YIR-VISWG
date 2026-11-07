@@ -10,7 +10,7 @@ Live: https://visualanalyticshealthcare.github.io/AMIA26-YIR-VISWG/
 Two independent layers:
 
 - **Text slides: impress.js + Vue.** impress.js only moves the text slides through 3D space (a spiral dive along -z). Headlines and the search query type themselves out with [typed.js](https://github.com/mattboldt/typed.js) the first time a slide is entered.
-- **Paper cloud: Three.js.** A fixed full-screen WebGL canvas with one glowing point per reviewed paper, inside a faint background of ~3,350 points standing for the 6,700+ visualization / dashboard papers published in the same window (1 dot ≈ 2 papers). It has its own render loop; each slide only selects a layout (journal clusters, screening sphere, selection ring, closing funnel), and the points ease toward it. impress.js never touches it.
+- **Paper cloud: Three.js.** A fixed full-screen WebGL canvas with one glowing point per reviewed paper, inside a faint background of 6,700 points, one per visualization / dashboard paper published in the same window. It has its own render loop; each slide only selects a layout (journal clusters, screening sphere, selection ring, closing funnel), and the points ease toward it. impress.js never touches it.
 - **Interaction.** Hovering the cloud pauses its rotation; clicking a dot opens a panel with that paper's title, journal, authors, and PubMed / DOI links. A legend under the cloud explains each scene's colors.
 - **Navigation.** Arrow keys or Space, the home button (top left), the stage tracker (bottom center), or the toolbar (bottom right: first, previous, next, last, full screen).
 

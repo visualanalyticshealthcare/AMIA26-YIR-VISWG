@@ -29,7 +29,7 @@ interface LegendItem {
 }
 const background: LegendItem = {
   color: COLORS.background,
-  label: `Visualization & dashboard papers in the same year: ${broadSearch.label} (1 faint dot ≈ ${BACKGROUND_RATIO})`,
+  label: `Visualization & dashboard papers in the same year: ${broadSearch.label} (1 faint dot = ${BACKGROUND_RATIO === 1 ? '1 paper' : `${BACKGROUND_RATIO} papers`})`,
   faint: true,
 }
 const reviewed: LegendItem = { color: COLORS.paper, label: 'Paper in manual review' }
@@ -47,13 +47,13 @@ const LEGENDS: Record<CloudScene, LegendItem[]> = {
   ],
   stage2: [],
   stage3: [
-    { color: COLORS.star, label: 'Most representative' },
+    { color: COLORS.star, label: 'Highlighted' },
     { color: COLORS.kept, label: 'Selected' },
     { color: COLORS.dropped, label: 'Not selected' },
     background,
   ],
   overview: [
-    { color: COLORS.star, label: 'Most representative' },
+    { color: COLORS.star, label: 'Highlighted' },
     { color: COLORS.kept, label: 'Selected' },
     { color: COLORS.screened, label: 'Passed screening' },
     { color: COLORS.dropped, label: 'Reviewed only' },

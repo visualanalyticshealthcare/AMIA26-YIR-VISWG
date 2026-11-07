@@ -38,21 +38,21 @@ export const exclusion = [
 
 export const rounds = [
   { name: 'Phase 1 · Title & abstract', detail: 'Manual include / exclude against the criteria' },
-  { name: 'Phase 2 · Full text', detail: 'Read in full; select the strongest papers of the year' },
+  { name: 'Phase 2 · Full text', detail: 'Read in full and discussed; papers selected for this review' },
 ]
 
 /** What the full-text review weighed, one sentence each. */
 export const rubric = [
   {
     name: 'Novelty',
-    detail: 'A genuinely new visualization technique or type of analysis, not an existing tool applied to new data.',
+    detail: 'Whether the work introduces a new visualization technique or type of analysis.',
   },
   {
     name: 'Importance',
-    detail: 'The significance of the health problem and the potential impact on care or public health.',
+    detail: 'The relevance of the health problem and the potential impact on care or public health.',
   },
   {
     name: 'Presentability',
-    detail: 'Clear visual design backed by convincing evaluation or real-world use, worth showcasing to the field.',
+    detail: 'How clearly the design, evaluation, or real-world use can be presented to the workshop audience.',
   },
 ]

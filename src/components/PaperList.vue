@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** The selected papers as a plain-text list with links; the two most representative are starred. */
+/** The selected papers as a plain-text list with links; the two highlighted papers are starred. */
 import { shortlist } from '../data/records'
 
 const author = (a: string) => a.split(',')[0] + (a.includes(',') ? ' et al.' : '')

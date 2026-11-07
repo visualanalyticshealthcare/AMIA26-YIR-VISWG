@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** One of the most representative papers: bibliographic details, cover page, and why it stands out. */
+/** One highlighted paper: bibliographic details, cover page, and notable aspects. */
 import TypedText from './TypedText.vue'
 import type { Featured } from '../data/featured'
 
@@ -10,7 +10,7 @@ const r = props.paper.record
 <template>
   <div class="featured">
     <div class="info">
-      <div class="eyebrow">Most representative · {{ index + 1 }} of {{ total }}</div>
+      <div class="eyebrow">Highlighted paper · {{ index + 1 }} of {{ total }}</div>
       <h2><TypedText :text="r.title" :speed="16" /></h2>
       <p class="tagline">{{ paper.tagline }}</p>
 
@@ -43,7 +43,7 @@ const r = props.paper.record
         </div>
       </dl>
 
-      <h3>Why it stands out</h3>
+      <h3>Notable aspects</h3>
       <ol class="innovations">
         <li v-for="item in paper.innovations" :key="item.title">
           <b>{{ item.title }}.</b> {{ item.detail }}

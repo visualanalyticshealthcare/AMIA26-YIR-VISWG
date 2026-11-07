@@ -1,6 +1,6 @@
 /**
  * Persistent Three.js point cloud: one glowing point per paper in the manual review, floating inside a faint
- * background of ~3,350 points that stands for the 6,700+ visualization / dashboard papers published in the window.
+ * background of 6,700 points, one per visualization / dashboard paper among the 6,700+ visualization / dashboard papers published in the window.
  *
  * It lives on its own fixed canvas with its own render loop, completely independent of impress.js.
  * Slides only call `setScene()`; every point then eases toward the target position, color, and opacity
@@ -41,7 +41,7 @@ const BACKGROUND_ALPHA: Record<CloudScene, number> = {
 }
 
 /** Each background point stands for this many papers. */
-export const BACKGROUND_RATIO = 2
+export const BACKGROUND_RATIO = 1
 
 interface Target {
   pos: THREE.Vector3
@@ -253,7 +253,7 @@ export class PaperCloud {
       kept.forEach(({ i }, k) => (layout[i] = fibonacciSphere(k, kept.length, radii[s]!, jitter[i]!)))
       this.stagePos[s] = layout
     }
-    // Selected papers: a tilted ring, most representative first.
+    // Selected papers: a tilted ring, highlighted papers first.
     const top = this.records
       .map((r, i) => ({ r, i }))
       .filter(({ r }) => r.stage === 3)
@@ -346,7 +346,7 @@ export class PaperCloud {
       pos.setXYZ(i, v.x * r * 1.05, v.y * r * 0.85, v.z * r)
       const c = rand() > 0.8 ? C.neutral : C.background
       col.setXYZ(i, c.r, c.g, c.b)
-      alp.setX(i, 0.16 + rand() * 0.18)
+      alp.setX(i, 0.11 + rand() * 0.13) // twice the dots of the 1:2 version, so each is fainter
       siz.setX(i, 0.28 + rand() * 0.3)
     }
     return pts

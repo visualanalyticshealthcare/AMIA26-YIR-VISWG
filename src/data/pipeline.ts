@@ -23,7 +23,7 @@ export interface Stage {
 
 const n = (s: number) => countAtLeast(s)
 const uncertain = records.filter((r) => r.uncertain).length
-// The two papers with a perfect full-text score are the most representative overall.
+// The two papers with a perfect full-text score are highlighted on their own slides.
 const perfect = records.filter((r) => r.stage === 3 && r.score?.total === 9).length
 
 export const stages: Stage[] = [
@@ -35,7 +35,7 @@ export const stages: Stage[] = [
     count: n(0),
     meaning: 'entered manual review',
     flow: `All ${n(0)} papers returned by the PubMed search`,
-    description: 'Every paper was read and judged by the team, not filtered by keywords alone.',
+    description: 'Each paper was reviewed manually by a student team under faculty supervision.',
     chips: byJournal.slice(0, 6).map(([j, c]) => `${j} · ${c}`),
   },
   {
@@ -46,7 +46,7 @@ export const stages: Stage[] = [
     count: n(1),
     meaning: 'passed title & abstract screening',
     flow: `${n(1)} of ${n(0)} kept · ${n(0) - n(1)} excluded`,
-    description: 'Kept only if it is interactive visual analytics applied to health care.',
+    description: 'Included when the title and abstract met the criteria: interactive visual analytics in a health setting.',
     chips: [`${uncertain} of the ${n(1)} kept as uncertain`],
   },
   {
@@ -56,8 +56,8 @@ export const stages: Stage[] = [
     minStage: 3,
     count: n(3),
     meaning: 'selected after full-text review',
-    flow: `${n(3)} of ${n(1)} selected · ${perfect} most representative overall`,
-    description: `The strongest papers of the year; ${perfect} of them stood out as the most representative across every dimension.`,
-    chips: [`${perfect} most representative`, `${n(3) - perfect} more strong papers`],
+    flow: `${n(3)} of ${n(1)} selected · ${perfect} highlighted on the next slides`,
+    description: "Chosen by the review team after reading the full text. The selection reflects the team's judgment, not a ranking of the field.",
+    chips: [`${perfect} highlighted`, `${n(3) - perfect} other selected papers`],
   },
 ]
